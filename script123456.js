@@ -32,7 +32,6 @@ const canvas = document.getElementById("faceCanvas"); // Reference to the new ca
 const context = canvas.getContext("2d");  
 
 let isPlaying = false; // Flag to check if music is currently playing  
-let songPlayed = false; // Flag to check if a song has already been played  
 
 // Start Webcam  
 function startWebcam() {  
@@ -65,7 +64,7 @@ function captureAndSendFrame() {
 
 // Fetch Emotion and Play Music  
 function fetchEmotion(imageData) {  
-    fetch("https://2590-2402-1980-240-b31d-5179-668e-5c50-deec.ngrok-free.app/predict", {  // Updated URL  
+    fetch("https://e9e5-2402-1980-245-609b-11f3-2e4d-776e-eff8.ngrok-free.app/predict", {  // Updated to ngrok URL  
         method: "POST",  
         headers: { "Content-Type": "application/json" },  
         body: JSON.stringify({ image: imageData }),  
@@ -86,33 +85,42 @@ function fetchEmotion(imageData) {
             // Log the face data received from the API  
             console.log("Face data received:", data.faces);  
 
-            // Draw rectangles around detected faces (if needed, you can add visual feedback here)  
+            // Get the current video dimensions  
+            const videoWidth = video.videoWidth;  
+            const videoHeight = video.videoHeight;  
+
+            // Original dimensions of the images used for face detection  
+            const originalImageWidth = 48; // Change this if your model uses different dimensions  
+            const originalImageHeight = 48; // Change this if your model uses different dimensions  
+
+            // Calculate scaling factors  
+            const scaleX = videoWidth / originalImageWidth;  
+            const scaleY = videoHeight / originalImageHeight;  
+
+            // Draw rectangles around detected faces  
             if (data.faces) {  
                 data.faces.forEach(face => {  
                     // Scale the coordinates based on the video dimensions  
-                    const x = face.x;  
-                    const y = face.y;  
-                    const w = face.w;  
-                    const h = face.h;  
+                    const x = face.x * scaleX;  
+                    const y = face.y * scaleY;  
+                    const w = face.w * scaleX;  
+                    const h = face.h * scaleY;  
 
-                    // You can add visual feedback here if needed, but the red border is disabled  
-                    // context.strokeStyle = "red"; // Set border color  
-                    // context.lineWidth = 2; // Set border width  
-                    // context.strokeRect(x, y, w, h); // Draw rectangle  
+                    // Log the scaled coordinates  
+                    console.log(`Drawing rectangle at: (${x}, ${y}, ${w}, ${h})`);  
+
+                    context.strokeStyle = "red"; // Set border color  
+                    context.lineWidth = 2; // Set border width  
+                    context.strokeRect(x, y, w, h); // Draw rectangle  
                 });  
             } else {  
                 console.log("No faces detected.");  
             }  
 
-            // Check if a song should be played  
-            if (data.song && !songPlayed) {  
+            if (data.song && !isPlaying) { // Only play if no song is currently playing  
                 playSong(detectedEmotion, data.song);  
-                songPlayed = true; // Set the flag to true after playing the first song  
             } else if (!data.song) {  
-                // If no song is specified, keep the current song title  
-                if (!isPlaying) {  
-                    songTitle.textContent = "Song: None";  
-                }  
+                songTitle.textContent = "Song: None";  
             }  
         })  
         .catch((error) => {  
@@ -123,17 +131,24 @@ function fetchEmotion(imageData) {
 
 // Play Song Function  
 function playSong(emotion, song) {  
+    const songUrl = `https://e9e5-2402-1980-245-609b-11f3-2e4d-776e-eff8.ngrok-free.app/music/${emotion}/${song}`;  // Updated to ngrok URL  
+    console.log("Song URL:", songUrl);  // Log the song URL  
     songTitle.textContent = `Song: ${song}`;  
-    musicSource.src = `https://2590-2402-1980-240-b31d-5179-668e-5c50-deec.ngrok-free.app/music/${emotion}/${song}`;  // Updated URL  
+    musicSource.src = songUrl;  
     musicPlayer.load();  
-    musicPlayer.play();  
+    musicPlayer.play()  
+        .then(() => {  
+            console.log("Music is playing");  
+        })  
+        .catch((error) => {  
+            console.error("Music Play Error:", error);  // Log any playback errors  
+        });  
     musicPlayerSection.style.display = "block"; // Ensure the music player section is visible  
-    isPlaying = true; // Set the flag to true  
+    isPlaying = true;  
 
     musicPlayer.onended = () => {  
         isPlaying = false; // Reset the flag when the song ends  
         songTitle.textContent = "Song: None"; // Reset song title when finished  
-        // Do not reset songPlayed flag to allow only the first song to play  
     };  
 }  
 
