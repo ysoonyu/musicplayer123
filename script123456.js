@@ -64,7 +64,7 @@ function captureAndSendFrame() {
 
 // Fetch Emotion and Play Music  
 function fetchEmotion(imageData) {  
-    fetch("https://e9e5-2402-1980-245-609b-11f3-2e4d-776e-eff8.ngrok-free.app/predict", {  // Updated to ngrok URL  
+    fetch("https://c8c51ce357c0.ngrok.app/predict", { // Updated to new ngrok URL  
         method: "POST",  
         headers: { "Content-Type": "application/json" },  
         body: JSON.stringify({ image: imageData }),  
@@ -131,8 +131,8 @@ function fetchEmotion(imageData) {
 
 // Play Song Function  
 function playSong(emotion, song) {  
-    const songUrl = `https://e9e5-2402-1980-245-609b-11f3-2e4d-776e-eff8.ngrok-free.app/music/${emotion}/${song}`;  // Updated to ngrok URL  
-    console.log("Song URL:", songUrl);  // Log the song URL  
+    const songUrl = `https://c8c51ce357c0.ngrok.app/music/${emotion}/${song}`; // Updated to new ngrok URL  
+    console.log("Song URL:", songUrl); // Log the song URL  
     songTitle.textContent = `Song: ${song}`;  
     musicSource.src = songUrl;  
     musicPlayer.load();  
@@ -141,7 +141,7 @@ function playSong(emotion, song) {
             console.log("Music is playing");  
         })  
         .catch((error) => {  
-            console.error("Music Play Error:", error);  // Log any playback errors  
+            console.error("Music Play Error:", error); // Log any playback errors  
         });  
     musicPlayerSection.style.display = "block"; // Ensure the music player section is visible  
     isPlaying = true;  
